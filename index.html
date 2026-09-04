@@ -657,3 +657,85 @@
 
 </body>
   </html>
+","Center Console",
+"Radiator","Radiator Fan","AC Condenser","AC Compressor","Intercooler","Turbocharger",
+"Battery","Alternator","Starter Motor","Silencer / Exhaust","Fuel Tank","Fuel Pump",
+"Front R.H. Suspension","Front L.H. Suspension","Rear R.H. Suspension","Rear L.H. Suspension",
+"Front R.H. Wheel","Front L.H. Wheel","Rear R.H. Wheel","Rear L.H. Wheel",
+"Front R.H. Tyre","Front L.H. Tyre","Rear R.H. Tyre","Rear L.H. Tyre",
+"Front R.H. Fender","Front L.H. Fender","Rear R.H. Quarter Panel","Rear L.H. Quarter Panel",
+"Roof Panel","A-Pillar","B-Pillar","C-Pillar","Front Panel","Rear Panel","Boot / Dicky Door",
+"Fuel Filler Door","Front Bumper Painting","Rear Bumper Painting","Bonnet Painting","Roof Painting",
+"Front R.H. Fender Painting","Front L.H. Fender Painting","Rear R.H. Quarter Panel Painting","Rear L.H. Quarter Panel Painting",
+"Front R.H. Door Painting","Front L.H. Door Painting","Rear R.H. Door Painting","Rear L.H. Door Painting",
+"Back Lift Door Painting","Boot / Dicky Door Painting","Right Side Body Painting","Left Side Body Painting",
+"Front Panel Painting","Rear Panel Painting","A-Pillar Painting","B-Pillar Painting","C-Pillar Painting",
+"Roof Panel Painting","Door Mirror R.H. Painting","Door Mirror L.H. Painting","Front Grille Painting",
+"Rear Grille Painting","Other / Custom"
+];
+
+function optionHTML(){
+ return '<option value="">Select service...</option>'+options.map(x=>`<option>${x}</option>`).join('');
+}
+function addRow(){
+ const tr=document.createElement('tr');
+ tr.innerHTML=`<td><select class="qty" onchange="calc()">${Array.from({length:20},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join("")}</select></td>
+ <td><select class="item-select" onchange="customize(this)">${optionHTML()}</select><input class="item-custom" placeholder="Type custom work..." oninput="calc()"></td>
+ <td><input class="rate" type="number" min="0" step="0.01" value="0" oninput="calc()"></td>
+ <td class="amount">0.00</td>`;
+ document.querySelector('#items tbody').appendChild(tr); calc();
+}
+function customize(sel){
+ const custom=sel.parentElement.querySelector('.item-custom');
+ custom.style.display=sel.value==="Other / Custom"?'block':'none';
+ if(sel.value!=="Other / Custom") custom.value='';
+ calc();
+}
+function calc(){
+ let total=0;
+ document.querySelectorAll('#items tbody tr').forEach(tr=>{
+  const q=Number(tr.querySelector('.qty').value)||0;
+  const r=Number(tr.querySelector('input.rate').value)||0;
+  const a=q*r; total+=a;
+  tr.querySelector('.amount').textContent=a.toFixed(2);
+ });
+ document.getElementById('total').textContent=total.toFixed(2);
+ document.getElementById('words').textContent=numberWords(Math.round(total));
+}
+function numberWords(n){
+ if(n===0)return"Zero";
+ const ones=["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
+ const tens=["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+ function two(x){if(x<20)return ones[x];return tens[Math.floor(x/10)]+(x%10?" "+ones[x%10]:"")}
+ function part(x){let s="";if(x>=10000000){s+=two(Math.floor(x/10000000))+" Crore ";x%=10000000}
+ if(x>=100000){s+=two(Math.floor(x/100000))+" Lakh ";x%=100000}
+ if(x>=1000){s+=two(Math.floor(x/1000))+" Thousand ";x%=1000}
+ if(x>=100){s+=ones[Math.floor(x/100)]+" Hundred ";x%=100}
+ if(x>0)s+=two(x);return s.trim()}
+ return part(n);
+}
+function sync(){
+ outNo.textContent=billNo.value||"";
+ outCustomer.textContent=customer.value||"";
+ outAddress.textContent=custAddress.value||"";
+ outDate.textContent=date.value?new Date(date.value+"T00:00:00").toLocaleDateString('en-GB'):"";
+}
+document.querySelectorAll('#billNo,#date,#customer,#custAddress').forEach(x=>x.addEventListener('input',sync));
+document.getElementById('date').value=new Date().toISOString().slice(0,10);
+addRow();
+
+function clearBill(){
+ if(confirm("Bill की सारी entries clear करें?")){
+  document.querySelector('#items tbody').innerHTML='';
+  billNo.value='';customer.value='';custAddress.value='';date.value=new Date().toISOString().slice(0,10);
+  addRow();sync();
+ }
+}
+function downloadPDF(){
+ // Browser print dialog is the most reliable PDF method on GitHub Pages and Android.
+ window.print();
+}
+sync();
+</script>
+</body>
+ </html>
